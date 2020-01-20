@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/http/pprof"
 	"os"
 	"path"
 	"strings"
@@ -127,6 +128,13 @@ func main() {
 	mux.HandleFunc("/", rootHandler)
 	mux.HandleFunc(uploadPath, s.uploadHandlerErrHandler)
 	mux.HandleFunc(pprofWebPath, s.servePprof)
+
+	// copied from net/http/pprof to avoid relying on the global http.DefaultServeMux
+	mux.HandleFunc("/debug/pprof/", pprof.Index)
+	mux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
+	mux.HandleFunc("/debug/pprof/profile", pprof.Profile)
+	mux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+	mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
 
 	port := os.Getenv(portEnvVar)
 	if port == "" {

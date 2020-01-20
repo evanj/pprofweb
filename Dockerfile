@@ -13,15 +13,14 @@ RUN cd /tmp && \
     for deb in *.deb; do dpkg --extract $deb /dpkg || exit 10; done
 
 
-FROM gcr.io/distroless/base-debian10:debug AS run
+FROM gcr.io/distroless/base-debian10:latest AS run
 COPY --from=builder /go/src/pprofweb/pprofweb /pprofweb
 COPY --from=deb_extractor /dpkg /
 # Configure dot plugins
 RUN ["dot", "-c"]
 
-
 # Use a non-root user: slightly more secure (defense in depth)
-USER nonroot
+USER nobody
 WORKDIR /
 EXPOSE 8080
 ENTRYPOINT ["/pprofweb"]

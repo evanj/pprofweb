@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pprofweb
+  labels:
+    app: pprofweb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pprofweb
+  template:
+    metadata:
+      labels:
+        app: pprofweb
+      annotations:
+        # allow scale down even though this uses an emptyDir for tmp
+        cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
+    spec:
+      containers:
+      - name: pprofweb
+        image: us.gcr.io/gosignin-demo/pprofweb:20200120-1
+
+        resources:
+          requests:
+            memory: 64Mi
+            #ephemeral-storage: 256Mi
+          limits:
+            memory: 128Mi
+            #ephemeral-storage: 256Mi
+
+        volumeMounts:
+        - mountPath: /tmp
+          name: tmp
+
+        # defense in depth: read-only FS; run as nobody/nogroup
+        securityContext:
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 65534
+          runAsGroup: 65534
+
+      volumes:
+      - name: tmp
+        emptyDir:
+          # TODO: replace with resource request/limit?
+          sizeLimit: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pprofweb
+spec:
+  selector:
+    app: pprofweb
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
