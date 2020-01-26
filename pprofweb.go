@@ -154,10 +154,8 @@ const rootTemplate = `<!doctype html>
 <head><title>PProf Web Interface</title></head>
 <body>
 <h1>PProf Web Interface</h1>
-<p>Upload a file to explore it using the Pprof web interface.</p>
-<h2>NOTE: Will not work with multiple users</h2>
+<p>Upload a file to explore it using the <a href="https://github.com/google/pprof">Pprof</a> web interface. See the <a href="https://github.com/evanj/pprofweb">documentation/source code</a>.</p>
 <p>This is currently a hack: it runs in Google Cloud Run, which will restart instances whenever it wants. This means your state may get lost at any time, and it won't work if there are multiple people using it at the same time.</p>
-<p>TODO: Write all the output from pprof out to static files in Google Cloud Storage and serve them from there.</p>
 
 <form method="post" action="` + uploadPath + `" enctype="multipart/form-data">
 <p>Upload file: <input type="file" name="` + fileFormID + `"> <input type="submit" value="Upload"></p>

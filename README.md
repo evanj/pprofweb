@@ -1,8 +1,8 @@
 # PProf Web UI
 
-This is a total hack to upload pprof files and serve the UI. This avoids needing to install any tools.
+This is a hacky experiment that serves the [Go pprof profiler web UI](https://github.com/google/pprof). You can upload pprof files then view them without installing anything. See [my blog post for some additional details](https://www.evanjones.ca/pprofweb.html).
 
-Try it: https://pprofweb-kgdmaenclq-uc.a.run.app/
+Try it: https://pprofweb.evanjones.ca/
 
 
 ## Run Locally
