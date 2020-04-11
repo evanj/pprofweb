@@ -1,11 +1,11 @@
-FROM golang:1.13.6-buster AS builder
+FROM golang:1.14.2-buster AS builder
 COPY go.mod go.sum pprofweb.go /go/src/pprofweb/
 WORKDIR /go/src/pprofweb
 RUN go build --mod=readonly pprofweb.go
 
 
 # Extract graphviz and dependencies
-FROM golang:1.13.6-buster AS deb_extractor
+FROM golang:1.14.2-buster AS deb_extractor
 RUN cd /tmp && \
     apt-get update && apt-get download \
         graphviz libgvc6 libcgraph6 libltdl7 libxdot4 libcdt5 libpathplan4 libexpat1 zlib1g && \
