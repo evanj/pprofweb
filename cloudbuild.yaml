@@ -1,5 +1,7 @@
+# build with:
+# gcloud builds submit . --substitutions=SHORT_SHA=$(git rev-parse --short=10 HEAD)
 steps:
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '--tag=us.gcr.io/$PROJECT_ID/pprofweb', '.']
+  args: ['build', '--tag=us.gcr.io/$PROJECT_ID/pprofweb:$SHORT_SHA', '.']
 images:
-- 'us.gcr.io/$PROJECT_ID/pprofweb'
+- 'us.gcr.io/$PROJECT_ID/pprofweb:$SHORT_SHA'

@@ -8,8 +8,10 @@ import (
 	"net/http/pprof"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 
+	"github.com/NYTimes/gziphandler"
 	"github.com/google/pprof/driver"
 )
 
@@ -17,19 +19,21 @@ const portEnvVar = "PORT"
 const defaultPort = "8080"
 const maxUploadSize = 32 << 20 // 32 MiB
 
-const pprofFilePath = "/tmp/pprofweb-temp"
-
 const fileFormID = "file"
 const uploadPath = "/upload"
 const pprofWebPath = "/pprofweb/"
 
+// use the system-specified temporary directory
+// TODO: do something smarter with a real temporary directory
+var pprofFilePath = filepath.Join(os.TempDir(), "pprofweb-temp")
+
 type server struct {
 	// serves pprof handlers after it is loaded
-	pprofMux *http.ServeMux
+	pprofMux http.Handler
 }
 
 func (s *server) startHTTP(args *driver.HTTPServerArgs) error {
-	s.pprofMux = http.NewServeMux()
+	mux := http.NewServeMux()
 	for pattern, handler := range args.Handlers {
 		var joinedPattern string
 		if pattern == "/" {
@@ -37,8 +41,12 @@ func (s *server) startHTTP(args *driver.HTTPServerArgs) error {
 		} else {
 			joinedPattern = path.Join(pprofWebPath, pattern)
 		}
-		s.pprofMux.Handle(joinedPattern, handler)
+		mux.Handle(joinedPattern, handler)
 	}
+
+	// enable gzip compression: flamegraphs can be big!
+	s.pprofMux = gziphandler.GzipHandler(mux)
+
 	return nil
 }
 
@@ -72,6 +80,7 @@ func (s *server) uploadHandlerErrHandler(w http.ResponseWriter, r *http.Request)
 	}
 	err := s.uploadHandler(w, r)
 	if err != nil {
+		log.Printf("upload error: %s", err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -121,9 +130,8 @@ func (s *server) uploadHandler(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func main() {
-	s := &server{}
-
+// handler returns a handler that servers the pprof web UI.
+func (s *server) handler() *http.ServeMux {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", rootHandler)
 	mux.HandleFunc(uploadPath, s.uploadHandlerErrHandler)
@@ -135,6 +143,12 @@ func main() {
 	mux.HandleFunc("/debug/pprof/profile", pprof.Profile)
 	mux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
 	mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
+	return mux
+}
+
+func main() {
+	s := &server{}
+	handler := s.handler()
 
 	port := os.Getenv(portEnvVar)
 	if port == "" {
@@ -144,7 +158,7 @@ func main() {
 
 	addr := ":" + port
 	log.Printf("listen addr %s (http://localhost:%s/)", addr, port)
-	if err := http.ListenAndServe(addr, mux); err != nil {
+	if err := http.ListenAndServe(addr, handler); err != nil {
 		panic(err)
 	}
 }
