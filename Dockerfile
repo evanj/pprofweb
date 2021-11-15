@@ -1,17 +1,17 @@
 # Extract graphviz and dependencies
-FROM golang:1.14.3-buster AS deb_extractor
+FROM golang:1.17.3-bullseye AS deb_extractor
 RUN cd /tmp && \
     apt-get update && apt-get download \
         graphviz libgvc6 libcgraph6 libltdl7 libxdot4 libcdt5 libpathplan4 libexpat1 zlib1g && \
     mkdir /dpkg && \
     for deb in *.deb; do dpkg --extract $deb /dpkg || exit 10; done
 
-FROM golang:1.14.3-buster AS builder
+FROM golang:1.17.3-bullseye AS builder
 COPY go.mod go.sum pprofweb.go /go/src/pprofweb/
 WORKDIR /go/src/pprofweb
 RUN go build --mod=readonly pprofweb.go
 
-FROM gcr.io/distroless/base-debian10:latest AS run
+FROM gcr.io/distroless/base-debian11:latest AS run
 COPY --from=builder /go/src/pprofweb/pprofweb /pprofweb
 COPY --from=deb_extractor /dpkg /
 # Configure dot plugins

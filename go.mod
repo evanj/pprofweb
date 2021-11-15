@@ -1,11 +1,10 @@
 module github.com/evanj/pprofweb
 
-go 1.13
+go 1.17
 
 require (
 	github.com/NYTimes/gziphandler v1.1.1
-	// commit 427632fa3b1c fails as user nobody:
-	// https://github.com/google/pprof/pull/542
-	github.com/google/pprof v0.0.0-20200504201735-160c4290d1d8
-	github.com/ianlancetaylor/demangle v0.0.0-20200524003926-2c5affb30a03 // indirect
+	github.com/google/pprof v0.0.0-20211108044417-e9b028704de0
 )
+
+require github.com/ianlancetaylor/demangle v0.0.0-20210905161508-09a460cdf81d // indirect
