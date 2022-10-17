@@ -1,7 +1,10 @@
 # build with:
-# gcloud builds submit . --substitutions=SHORT_SHA=$(git rev-parse --short=10 HEAD)
+# gcloud builds submit . --substitutions=SHORT_SHA=$(git rev-parse --short=10 HEAD),_YYMMDD=$(date +%Y%m%d)
 steps:
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '--tag=us.gcr.io/$PROJECT_ID/pprofweb:$SHORT_SHA', '.']
+  args: ['build', '--tag=us.gcr.io/$PROJECT_ID/pprofweb:$_YYMMDD-$SHORT_SHA', '.']
 images:
-- 'us.gcr.io/$PROJECT_ID/pprofweb:$SHORT_SHA'
+- 'us.gcr.io/$PROJECT_ID/pprofweb:$_YYMMDD-$SHORT_SHA'
+substitutions:
+  # Override on the command line
+  _YYMMDD: 'YYMMDD'
